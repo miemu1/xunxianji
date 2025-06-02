@@ -51,7 +51,7 @@ if (!isset($_SESSION['devtool'])) {
     exit();
 }
 
-$tableList = [
+$tableList = array(
     'npc' => 'NPC(非玩家角色)',
     'guaiwu' => '怪物',
     'boss' => 'BOSS',
@@ -77,10 +77,10 @@ $tableList = [
     'midguaiwu' => '地图怪物',
     'zhurenwu' => '主任务',
     'qy' => '区域'
-];
+);
 
-$columnLabels = [
-    'npc' => [
+$columnLabels = array(
+    'npc' => array(
         'id' => '编号',
         'nname' => 'NPC名称',
         'nsex' => 'NPC性别',
@@ -89,23 +89,22 @@ $columnLabels = [
         'taskid' => '任务列表',
         'mz' => '图片',
         'rwqy' => '任务区域'
-    ]
-];
+    )
+);
+
 $table = isset($_GET['table']) ? $_GET['table'] : '';
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
 $bg = random_gradient();
-$style = <<<STYLE
-<style>
-body{font-family:"Microsoft YaHei",sans-serif;background:{$bg};min-height:100vh;margin:0;}
+$style = '<style>
+body{font-family:"Microsoft YaHei",sans-serif;background:'.$bg.';min-height:100vh;margin:0;}
 .container{max-width:1000px;margin:50px auto;padding:20px;background:rgba(255,255,255,0.85);border-radius:10px;border:1px solid rgba(255,255,255,0.6);backdrop-filter:blur(8px);}
 table{width:100%;border-collapse:collapse;}
 th,td{border:1px solid #999;padding:5px;text-align:left;}
 label{display:block;margin-bottom:10px;}
 input[type=text],input[type=password]{width:100%;padding:5px;border-radius:4px;border:1px solid #ccc;}
 button{padding:5px 10px;margin-top:10px;}
-</style>
-STYLE;
+</style>';
 $header = '<!DOCTYPE html><html lang="zh-CN"><meta charset="utf-8"><title>开发者工具</title>'.$style.'<body><div class="container">';
 $footer = '</div></body></html>';
 
@@ -114,8 +113,8 @@ if (!array_key_exists($table, $tableList)) {
 }
 
 if ($table && $action === 'insert' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $cols = [];
-    $vals = [];
+    $cols = array();
+    $vals = array();
     foreach ($_POST as $k => $v) {
         $cols[] = '`'.$k.'`';
         $vals[':'.$k] = $v;
@@ -128,7 +127,7 @@ if ($table && $action === 'insert' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $file = basename($_POST['muban']);
         $path = dirname(__DIR__).'/npc/muban/'.$file;
         if (!file_exists($path)) {
-            $content = "<?php\n// ".($_POST['nname'] ?? '')." 的脚本\n?>\n";
+            $content = "<?php\n// ".(isset($_POST['nname']) ? $_POST['nname'] : '')." 的脚本\n?>\n";
             file_put_contents($path, $content);
         }
     }
@@ -148,8 +147,11 @@ if ($table && $action === 'add') {
     foreach ($fields as $f) {
         if ($f['Extra'] === 'auto_increment') continue;
         $fname = $f['Field'];
-        $label = isset(
-            $columnLabels[$table][$fname]) ? $columnLabels[$table][$fname].'('.$fname.')' : $fname;
+        if (isset($columnLabels[$table]) && isset($columnLabels[$table][$fname])) {
+            $label = $columnLabels[$table][$fname].'('.$fname.')';
+        } else {
+            $label = $fname;
+        }
         echo '<div><label>'.$label.': <input name="'.$fname.'"></label></div>';
     }
     echo '<button type="submit">保存</button>';
@@ -164,11 +166,15 @@ if ($table) {
     echo $header;
     echo '<h2>'.htmlspecialchars($tableList[$table]).' 列表</h2>';
     echo '<a href="index.php?table='.$table.'&action=add">新增记录</a> | <a href="index.php">返回</a>';
-    echo '<table>'; 
+    echo '<table>';
     if ($rows) {
         echo '<tr>';
         foreach (array_keys($rows[0]) as $c) {
-            $label = isset($columnLabels[$table][$c]) ? $columnLabels[$table][$c].'('.$c.')' : $c;
+            if (isset($columnLabels[$table]) && isset($columnLabels[$table][$c])) {
+                $label = $columnLabels[$table][$c].'('.$c.')';
+            } else {
+                $label = $c;
+            }
             echo '<th>'.htmlspecialchars($label).'</th>';
         }
         echo '</tr>';
@@ -184,8 +190,9 @@ if ($table) {
     echo $footer;
     exit();
 }
+
+echo $header;
 ?>
-<?php echo $header; ?>
 <h2>请选择要管理的表</h2>
 <ul>
 <?php foreach ($tableList as $t => $label): ?>
