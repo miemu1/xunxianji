@@ -6,7 +6,7 @@ $db_user = 'root';
 $db_pass = '123456';
 
 // Developer tool password
-$dev_password = 'devpass';
+$dev_password = '123456';
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
